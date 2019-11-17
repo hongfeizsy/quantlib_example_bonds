@@ -39,9 +39,42 @@ int main()
 	boost::shared_ptr<QuantLib::RateHelper> zc1y(new QuantLib::DepositRateHelper(QuantLib::Handle<QuantLib::Quote>(zc1yRate),
 		QuantLib::Period(1, QuantLib::Years), settlementDays, calendar, QuantLib::ModifiedFollowing, true, zcBondDayCounter));
 
+	// setup bonds
+	QuantLib::Real redemption = 100.0;
+	
+	const QuantLib::Size numberOfBonds = 5;
 
+	QuantLib::Date issueDates[] = {
+		QuantLib::Date(15, QuantLib::March, 2005),
+		QuantLib::Date(15, QuantLib::June, 2005),
+		QuantLib::Date(30, QuantLib::June, 2006),
+		QuantLib::Date(15, QuantLib::November, 2002),
+		QuantLib::Date(15, QuantLib::May, 1987)
+	};
 
+	QuantLib::Date maturities[] = {
+		QuantLib::Date(31, QuantLib::August, 2010),
+		QuantLib::Date(31, QuantLib::August, 2011),
+		QuantLib::Date(31, QuantLib::August, 2013),
+		QuantLib::Date(15, QuantLib::August, 2018),
+		QuantLib::Date(15, QuantLib::May, 2038)
+	};
 
+	QuantLib::Real couponRates[] = {
+		0.02375,
+		0.04725,
+		0.03125,
+		0.04000,
+		0.04500
+	};
+
+	QuantLib::Real marketQuotes[] = {
+		100.390625,
+		106.21875,
+		100.59375,
+		101.6875,
+		102.140625
+	};
 
 	std::cout << "Computation time: " << timer.elapsed() << " second" << std::endl;
 	return 0;
