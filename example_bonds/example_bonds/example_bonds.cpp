@@ -16,8 +16,8 @@ int main()
 	QuantLib::Date todaysDate = calendar.advance(settlementDate, -fixingDays, QuantLib::Days);
 	QuantLib::Settings::instance().evaluationDate() = todaysDate;
 
-	std::cout << "Today: " << todaysDate.weekday() << ", " << todaysDate << std::endl;
-	std::cout << "Settlement date: " << settlementDate.weekday() << ", " << settlementDate << std::endl;
+	//std::cout << "Today: " << todaysDate.weekday() << ", " << todaysDate << std::endl;
+	//std::cout << "Settlement date: " << settlementDate.weekday() << ", " << settlementDate << std::endl;
 	
 	// building of bonds discounting yield curve
 
@@ -75,6 +75,11 @@ int main()
 		101.6875,
 		102.140625
 	};
+	
+	std::vector<boost::shared_ptr<QuantLib::SimpleQuote>> quote(numberOfBonds);
+	for (QuantLib::Size i = 0; i < quote.size(); i++) {
+		quote[i] = boost::make_shared<QuantLib::SimpleQuote>(marketQuotes[i]);
+	}
 
 	std::cout << "Computation time: " << timer.elapsed() << " second" << std::endl;
 	return 0;
