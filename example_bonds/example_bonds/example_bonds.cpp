@@ -81,6 +81,17 @@ int main()
 		quote[i] = boost::make_shared<QuantLib::SimpleQuote>(marketQuotes[i]);
 	}
 
+	QuantLib::RelinkableHandle<QuantLib::Quote> quoteHandle[numberOfBonds];
+	for (QuantLib::Size i = 0; i < numberOfBonds; i++) {
+		quoteHandle[i].linkTo(quote[i]);
+	}
+
+	// definition of rate helpers
+	std::vector<boost::shared_ptr<QuantLib::BondHelper>> bondsHelper;
+	for (QuantLib::Size i = 0; i < numberOfBonds; i++) {
+		QuantLib::Schedule schedule(issueDates[i], maturities[i], QuantLib::Period(QuantLib::Semiannual), QuantLib::TARGET());
+	}
+
 	std::cout << "Computation time: " << timer.elapsed() << " second" << std::endl;
 	return 0;
 }
