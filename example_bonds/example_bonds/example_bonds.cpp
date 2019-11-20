@@ -75,7 +75,7 @@ int main()
 		101.6875,
 		102.140625
 	};
-	
+
 	std::vector<boost::shared_ptr<QuantLib::SimpleQuote>> quote(numberOfBonds);
 	for (QuantLib::Size i = 0; i < quote.size(); i++) {
 		quote[i] = boost::make_shared<QuantLib::SimpleQuote>(marketQuotes[i]);
@@ -87,10 +87,36 @@ int main()
 	}
 
 	// definition of rate helpers
-	std::vector<boost::shared_ptr<QuantLib::BondHelper>> bondsHelper;
+	std::vector<boost::shared_ptr<QuantLib::BondHelper>> bondsHelpers;
 	for (QuantLib::Size i = 0; i < numberOfBonds; i++) {
-		QuantLib::Schedule schedule(issueDates[i], maturities[i], QuantLib::Period(QuantLib::Semiannual), QuantLib::TARGET());
+		QuantLib::Schedule schedule(issueDates[i], maturities[i], QuantLib::Period(QuantLib::Semiannual), QuantLib::TARGET(), 
+			QuantLib::Unadjusted, QuantLib::Unadjusted, QuantLib::DateGeneration::Backward, false);
+		
+		boost::shared_ptr<QuantLib::FixedRateBondHelper> bondHelper(new QuantLib::FixedRateBondHelper(quoteHandle[i], 
+			settlementDays, 100.0, schedule, std::vector<QuantLib::Rate>(1, couponRates[i]), 
+			QuantLib::ActualActual(QuantLib::ActualActual::Bond), QuantLib::Unadjusted, redemption, issueDates[i]));
+
+		bondsHelpers.push_back(bondHelper);
 	}
+	std::cout << bondsHelpers[0]->maturityDate() << std::endl;
+
+	// Curve building
+	QuantLib::DayCounter termStructureDayCounter = QuantLib::ActualActual(QuantLib::ActualActual::ISDA);
+	double tolerance = 1.0e-15;
+
+	// A depo-bond curve
+	std::vector<boost::shared_ptr<QuantLib::RateHelper>> bondInstruments;
+	// Adding the fixed rate bonds to the curve for the short end
+	bondInstruments.push_back(zc3m);
+	bondInstruments.push_back(zc6m);
+	bondInstruments.push_back(zc1y);
+	
+	// Adding the fixed rate bonds to the curve for the short end
+	for (QuantLib::Size i = 0; i < numberOfBonds; i++) {
+		bondInstruments.push_back(bondsHelpers[i]);
+	}
+
+
 
 	std::cout << "Computation time: " << timer.elapsed() << " second" << std::endl;
 	return 0;
