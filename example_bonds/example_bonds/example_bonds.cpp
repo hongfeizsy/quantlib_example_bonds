@@ -18,8 +18,22 @@ int main() {
 	QuantLib::Rate s5yQuote = 0.0359;
 	QuantLib::Rate s10yQuote = 0.0412;
 	QuantLib::Rate s15yQuote = 0.0433;
+	// deposits
+	boost::shared_ptr<QuantLib::Quote> d1wRate(new QuantLib::SimpleQuote(d1wQuote));
+	boost::shared_ptr<QuantLib::Quote> d1mRate(new QuantLib::SimpleQuote(d1mQuote));
+	boost::shared_ptr<QuantLib::Quote> d3mRate(new QuantLib::SimpleQuote(d3mQuote));
+	boost::shared_ptr<QuantLib::Quote> d6mRate(new QuantLib::SimpleQuote(d6mQuote));
+	boost::shared_ptr<QuantLib::Quote> d9mRate(new QuantLib::SimpleQuote(d9mQuote));
+	boost::shared_ptr<QuantLib::Quote> d1yRate(new QuantLib::SimpleQuote(d1yQuote));
+	// swaps
+	boost::shared_ptr<QuantLib::Quote> s2yRate(new QuantLib::SimpleQuote(s2yQuote));
+	boost::shared_ptr<QuantLib::Quote> s3yRate(new QuantLib::SimpleQuote(s3yQuote));
+	boost::shared_ptr<QuantLib::Quote> s5yRate(new QuantLib::SimpleQuote(s5yQuote));
+	boost::shared_ptr<QuantLib::Quote> s10yRate(new QuantLib::SimpleQuote(s10yQuote));
+	boost::shared_ptr<QuantLib::Quote> s15yRate(new QuantLib::SimpleQuote(s15yQuote));
 
-
+	QuantLib::Integer fixingDays = 3;
+	QuantLib::DayCounter depositDayCounter = QuantLib::Actual360();
 
 
 	std::cout << "Computing time: " << timer.elapsed() << " seconds" << std::endl;
