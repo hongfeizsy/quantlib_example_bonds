@@ -5,11 +5,11 @@
 int main() {
 	boost::timer timer;
 	QuantLib::Date effectiveDate(1, QuantLib::January, 2017);
-	QuantLib::Date terminationDate(1, QuantLib::January, 2019);
+	QuantLib::Date terminationDate(1, QuantLib::January, 2021);
 	QuantLib::Period tenor(6, QuantLib::Months);
 	QuantLib::Calendar calendar = QuantLib::Germany(QuantLib::Germany::FrankfurtStockExchange);
-	effectiveDate = calendar.adjust(effectiveDate);
-	terminationDate = calendar.adjust(terminationDate);
+	//effectiveDate = calendar.adjust(effectiveDate);
+	//terminationDate = calendar.adjust(terminationDate);
 	QuantLib::BusinessDayConvention convention = QuantLib::Following;
 	QuantLib::BusinessDayConvention terminationDateConvention = QuantLib::Following;
 	QuantLib::DateGeneration::Rule rule = QuantLib::DateGeneration::Forward;
