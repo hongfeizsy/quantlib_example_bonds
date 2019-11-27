@@ -4,99 +4,123 @@
 
 int main() {
 	boost::timer timer;
-	// Building of the Libor forecasting curve
-	// deposits
-	QuantLib::Rate d1wQuote = 0.043375;
-	QuantLib::Rate d1mQuote = 0.031875;
-	QuantLib::Rate d3mQuote = 0.0320375;
-	QuantLib::Rate d6mQuote = 0.03385;
-	QuantLib::Rate d9mQuote = 0.0338125;
-	QuantLib::Rate d1yQuote = 0.0335125;
-	// swaps
-	QuantLib::Rate s2yQuote = 0.0295;
-	QuantLib::Rate s3yQuote = 0.0323;
-	QuantLib::Rate s5yQuote = 0.0359;
-	QuantLib::Rate s10yQuote = 0.0412;
-	QuantLib::Rate s15yQuote = 0.0433;
-	// deposits
-	boost::shared_ptr<QuantLib::Quote> d1wRate(new QuantLib::SimpleQuote(d1wQuote));
-	boost::shared_ptr<QuantLib::Quote> d1mRate(new QuantLib::SimpleQuote(d1mQuote));
-	boost::shared_ptr<QuantLib::Quote> d3mRate(new QuantLib::SimpleQuote(d3mQuote));
-	boost::shared_ptr<QuantLib::Quote> d6mRate(new QuantLib::SimpleQuote(d6mQuote));
-	boost::shared_ptr<QuantLib::Quote> d9mRate(new QuantLib::SimpleQuote(d9mQuote));
-	boost::shared_ptr<QuantLib::Quote> d1yRate(new QuantLib::SimpleQuote(d1yQuote));
-	// swaps
-	boost::shared_ptr<QuantLib::Quote> s2yRate(new QuantLib::SimpleQuote(s2yQuote));
-	boost::shared_ptr<QuantLib::Quote> s3yRate(new QuantLib::SimpleQuote(s3yQuote));
-	boost::shared_ptr<QuantLib::Quote> s5yRate(new QuantLib::SimpleQuote(s5yQuote));
-	boost::shared_ptr<QuantLib::Quote> s10yRate(new QuantLib::SimpleQuote(s10yQuote));
-	boost::shared_ptr<QuantLib::Quote> s15yRate(new QuantLib::SimpleQuote(s15yQuote));
+	QuantLib::Date effectiveDate(1, QuantLib::January, 2017);
+	QuantLib::Date terminationDate(1, QuantLib::January, 2019);
+	QuantLib::Period tenor(6, QuantLib::Months);
+	QuantLib::Calendar calendar = QuantLib::Germany(QuantLib::Germany::FrankfurtStockExchange);
+	effectiveDate = calendar.adjust(effectiveDate);
+	terminationDate = calendar.adjust(terminationDate);
+	QuantLib::BusinessDayConvention convention = QuantLib::Following;
+	QuantLib::BusinessDayConvention terminationDateConvention = QuantLib::Following;
+	QuantLib::DateGeneration::Rule rule = QuantLib::DateGeneration::Forward;
 
-	// Rate helpers
-	// deposits
-	QuantLib::Natural fixingDays = 3;
-	QuantLib::Calendar calendar = QuantLib::TARGET();
-	QuantLib::DayCounter depositDayCounter = QuantLib::Actual360();
-	QuantLib::DayCounter zcBondsDayCounter = QuantLib::Actual365Fixed();
-	boost::shared_ptr<QuantLib::RateHelper> d1w = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1wRate), 
-		QuantLib::Period(1, QuantLib::Weeks), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	boost::shared_ptr<QuantLib::RateHelper> d1m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1mRate),
-		QuantLib::Period(1, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	boost::shared_ptr<QuantLib::RateHelper> d3m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d3mRate),
-		QuantLib::Period(3, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	boost::shared_ptr<QuantLib::RateHelper> d6m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d6mRate),
-		QuantLib::Period(6, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	boost::shared_ptr<QuantLib::RateHelper> d9m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d9mRate),
-		QuantLib::Period(9, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	boost::shared_ptr<QuantLib::RateHelper> d1y = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1yRate),
-		QuantLib::Period(12, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
-	// swap rates
-	QuantLib::Frequency fixedFrequency = QuantLib::Annual;
-	QuantLib::BusinessDayConvention fixedDayConvention = QuantLib::Unadjusted;
-	QuantLib::DayCounter fixedDayCounter = QuantLib::Thirty360();
-	boost::shared_ptr<QuantLib::IborIndex> iborIndex = boost::make_shared<QuantLib::Euribor6M>();
-	QuantLib::Period fwdStart(3, QuantLib::Days);
-	boost::shared_ptr<QuantLib::RateHelper> swap2y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s2yRate), 
-		QuantLib::Period(2, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex, 
-		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
-	boost::shared_ptr<QuantLib::RateHelper> swap3y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s3yRate),
-		QuantLib::Period(3, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
-		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
-	boost::shared_ptr<QuantLib::RateHelper> swap5y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s5yRate),
-		QuantLib::Period(5, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
-		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
-	boost::shared_ptr<QuantLib::RateHelper> swap10y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s10yRate),
-		QuantLib::Period(10, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
-		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
-	boost::shared_ptr<QuantLib::RateHelper> swap15y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s15yRate),
-		QuantLib::Period(15, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
-		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
-	// curve building
-	std::vector<boost::shared_ptr<QuantLib::RateHelper>> depoSwapInstruments;
-	depoSwapInstruments.push_back(d1w);
-	depoSwapInstruments.push_back(d1m);
-	depoSwapInstruments.push_back(d3m);
-	depoSwapInstruments.push_back(d6m);
-	depoSwapInstruments.push_back(d9m);
-	depoSwapInstruments.push_back(d1y);
-	depoSwapInstruments.push_back(swap2y);
-	depoSwapInstruments.push_back(swap3y);
-	depoSwapInstruments.push_back(swap5y);
-	depoSwapInstruments.push_back(swap10y);
-	depoSwapInstruments.push_back(swap15y);
+	QuantLib::Schedule schedule(effectiveDate, terminationDate, tenor, calendar, 
+		convention, terminationDateConvention, rule, true, effectiveDate);
 
-	QuantLib::Date settlementDate = QuantLib::Date(18, QuantLib::September, 2008);
-	settlementDate = calendar.adjust(settlementDate);
-	QuantLib::DayCounter dayCounter = QuantLib::ActualActual(QuantLib::ActualActual::ISDA);
-	boost::shared_ptr<QuantLib::YieldTermStructure> depoSwapTermStructure = boost::make_shared<QuantLib::PiecewiseYieldCurve<QuantLib::Discount, QuantLib::LogLinear>>(
-		settlementDate, depoSwapInstruments, dayCounter, 1.0e-15
-		);
-	
-	std::cout << depoSwapTermStructure->discount(15) << std::endl;
+	std::vector<QuantLib::Date> days = schedule.dates(); 
+	for (std::size_t sz = 0; sz < days.size(); sz++) {
+		std::cout << days[sz] << ", " << days[sz].weekday() << std::endl;
+	}
 
-	std::cout << "Computing time: " << timer.elapsed() << " seconds" << std::endl;
- 	return 0;
+	std::cout << "computation time: " << timer.elapsed() << " seconds" << std::endl;
+	return 0;
 }
+
+//int main() {
+//	boost::timer timer;
+//	// Building of the Libor forecasting curve
+//	// deposits
+//	QuantLib::Rate d1wQuote = 0.043375;
+//	QuantLib::Rate d1mQuote = 0.031875;
+//	QuantLib::Rate d3mQuote = 0.0320375;
+//	QuantLib::Rate d6mQuote = 0.03385;
+//	QuantLib::Rate d9mQuote = 0.0338125;
+//	QuantLib::Rate d1yQuote = 0.0335125;
+//	// swaps
+//	QuantLib::Rate s2yQuote = 0.0295;
+//	QuantLib::Rate s3yQuote = 0.0323;
+//	QuantLib::Rate s5yQuote = 0.0359;
+//	QuantLib::Rate s10yQuote = 0.0412;
+//	QuantLib::Rate s15yQuote = 0.0433;
+//	// deposits
+//	boost::shared_ptr<QuantLib::Quote> d1wRate(new QuantLib::SimpleQuote(d1wQuote));
+//	boost::shared_ptr<QuantLib::Quote> d1mRate(new QuantLib::SimpleQuote(d1mQuote));
+//	boost::shared_ptr<QuantLib::Quote> d3mRate(new QuantLib::SimpleQuote(d3mQuote));
+//	boost::shared_ptr<QuantLib::Quote> d6mRate(new QuantLib::SimpleQuote(d6mQuote));
+//	boost::shared_ptr<QuantLib::Quote> d9mRate(new QuantLib::SimpleQuote(d9mQuote));
+//	boost::shared_ptr<QuantLib::Quote> d1yRate(new QuantLib::SimpleQuote(d1yQuote));
+//	// swaps
+//	boost::shared_ptr<QuantLib::Quote> s2yRate(new QuantLib::SimpleQuote(s2yQuote));
+//	boost::shared_ptr<QuantLib::Quote> s3yRate(new QuantLib::SimpleQuote(s3yQuote));
+//	boost::shared_ptr<QuantLib::Quote> s5yRate(new QuantLib::SimpleQuote(s5yQuote));
+//	boost::shared_ptr<QuantLib::Quote> s10yRate(new QuantLib::SimpleQuote(s10yQuote));
+//	boost::shared_ptr<QuantLib::Quote> s15yRate(new QuantLib::SimpleQuote(s15yQuote));
+//
+//	// Rate helpers
+//	// deposits
+//	QuantLib::Natural fixingDays = 3;
+//	QuantLib::Calendar calendar = QuantLib::TARGET();
+//	QuantLib::DayCounter depositDayCounter = QuantLib::Actual360();
+//	QuantLib::DayCounter zcBondsDayCounter = QuantLib::Actual365Fixed();
+//	boost::shared_ptr<QuantLib::RateHelper> d1w = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1wRate), 
+//		QuantLib::Period(1, QuantLib::Weeks), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	boost::shared_ptr<QuantLib::RateHelper> d1m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1mRate),
+//		QuantLib::Period(1, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	boost::shared_ptr<QuantLib::RateHelper> d3m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d3mRate),
+//		QuantLib::Period(3, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	boost::shared_ptr<QuantLib::RateHelper> d6m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d6mRate),
+//		QuantLib::Period(6, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	boost::shared_ptr<QuantLib::RateHelper> d9m = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d9mRate),
+//		QuantLib::Period(9, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	boost::shared_ptr<QuantLib::RateHelper> d1y = boost::make_shared<QuantLib::DepositRateHelper>(QuantLib::Handle<QuantLib::Quote>(d1yRate),
+//		QuantLib::Period(12, QuantLib::Months), fixingDays, calendar, QuantLib::ModifiedFollowing, true, zcBondsDayCounter);
+//	// swap rates
+//	QuantLib::Frequency fixedFrequency = QuantLib::Annual;
+//	QuantLib::BusinessDayConvention fixedDayConvention = QuantLib::Unadjusted;
+//	QuantLib::DayCounter fixedDayCounter = QuantLib::Thirty360();
+//	boost::shared_ptr<QuantLib::IborIndex> iborIndex = boost::make_shared<QuantLib::Euribor6M>();
+//	QuantLib::Period fwdStart(3, QuantLib::Days);
+//	boost::shared_ptr<QuantLib::RateHelper> swap2y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s2yRate), 
+//		QuantLib::Period(2, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex, 
+//		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
+//	boost::shared_ptr<QuantLib::RateHelper> swap3y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s3yRate),
+//		QuantLib::Period(3, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
+//		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
+//	boost::shared_ptr<QuantLib::RateHelper> swap5y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s5yRate),
+//		QuantLib::Period(5, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
+//		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
+//	boost::shared_ptr<QuantLib::RateHelper> swap10y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s10yRate),
+//		QuantLib::Period(10, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
+//		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
+//	boost::shared_ptr<QuantLib::RateHelper> swap15y = boost::make_shared<QuantLib::SwapRateHelper>(QuantLib::Handle<QuantLib::Quote>(s15yRate),
+//		QuantLib::Period(15, QuantLib::Years), calendar, fixedFrequency, fixedDayConvention, fixedDayCounter, iborIndex,
+//		QuantLib::Handle<QuantLib::Quote>(), fwdStart);
+//	// curve building
+//	std::vector<boost::shared_ptr<QuantLib::RateHelper>> depoSwapInstruments;
+//	depoSwapInstruments.push_back(d1w);
+//	depoSwapInstruments.push_back(d1m);
+//	depoSwapInstruments.push_back(d3m);
+//	depoSwapInstruments.push_back(d6m);
+//	depoSwapInstruments.push_back(d9m);
+//	depoSwapInstruments.push_back(d1y);
+//	depoSwapInstruments.push_back(swap2y);
+//	depoSwapInstruments.push_back(swap3y);
+//	depoSwapInstruments.push_back(swap5y);
+//	depoSwapInstruments.push_back(swap10y);
+//	depoSwapInstruments.push_back(swap15y);
+//
+//	QuantLib::Date settlementDate = QuantLib::Date(18, QuantLib::September, 2008);
+//	settlementDate = calendar.adjust(settlementDate);
+//	QuantLib::DayCounter dayCounter = QuantLib::ActualActual(QuantLib::ActualActual::ISDA);
+//	boost::shared_ptr<QuantLib::YieldTermStructure> depoSwapTermStructure = boost::make_shared<QuantLib::PiecewiseYieldCurve<QuantLib::Discount, QuantLib::LogLinear>>(
+//		settlementDate, depoSwapInstruments, dayCounter, 1.0e-15
+//		);
+//	
+//	std::cout << depoSwapTermStructure->discount(15) << std::endl;
+//
+//	std::cout << "Computing time: " << timer.elapsed() << " seconds" << std::endl;
+// 	return 0;
+//}
 
 //int main()
 //{
